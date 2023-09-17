@@ -8,11 +8,11 @@ export type IncomingInput = {
 export type MessageRequest = {
     chatflowid: string;
     apiHost?: string;
-    body?: IncomingInput;
+    body: IncomingInput;
 };
 export declare const sendMessageQuery: ({ chatflowid, apiHost, body }: MessageRequest) => Promise<{
-    data?: any;
-    error?: Error | undefined;
+    data: any;
+    error: undefined;
 }>;
 export declare const isStreamAvailableQuery: ({ chatflowid, apiHost }: MessageRequest) => Promise<{
     data?: any;

@@ -1,14 +1,14 @@
-import { createSignal, createEffect, For, onMount } from 'solid-js'
-import { sendMessageQuery, isStreamAvailableQuery, IncomingInput } from '@/queries/sendMessageQuery'
-import { TextInput } from './inputs/textInput'
-import { GuestBubble } from './bubbles/GuestBubble'
+import { BotMessageTheme, TextInputTheme, UserMessageTheme } from '@/features/bubble/types'
+import { Popup } from '@/features/popup'
+import { IncomingInput, sendMessageQuery } from '@/queries/sendMessageQuery'
+import socketIOClient from 'socket.io-client'
+import { For, createEffect, createSignal, onMount } from 'solid-js'
+import { Badge } from './Badge'
 import { BotBubble } from './bubbles/BotBubble'
+import { GuestBubble } from './bubbles/GuestBubble'
 import { LoadingBubble } from './bubbles/LoadingBubble'
 import { SourceBubble } from './bubbles/SourceBubble'
-import { BotMessageTheme, TextInputTheme, UserMessageTheme } from '@/features/bubble/types'
-import { Badge } from './Badge'
-import socketIOClient from 'socket.io-client'
-import { Popup } from '@/features/popup'
+import { TextInput } from './inputs/textInput'
 
 type messageType = 'apiMessage' | 'userMessage' | 'usermessagewaiting'
 
@@ -207,13 +207,13 @@ export const Bot = (props: BotProps & { class?: string }) => {
 
         if (result.data) {
 
-            const data = handleVectaraMetadata(result.data)
+            const data = result.data
 
-            if (typeof data === 'object' && data.text && data.sourceDocuments) {
+            if (typeof data === 'object' && data.assistant) {
                 if (!isChatFlowAvailableToStream()) {
                     setMessages((prevMessages) => [
                         ...prevMessages,
-                        { message: data.text, sourceDocuments: data.sourceDocuments, type: 'apiMessage' }
+                        { message: data.assistant, sourceDocuments: null, type: 'apiMessage' }
                     ])
                 }
             } else {
@@ -227,7 +227,7 @@ export const Bot = (props: BotProps & { class?: string }) => {
             const error = result.error
             console.error(error)
             const err: any = error
-            const errorData = typeof err === 'string'? err :err.response.data || `${err.response.status}: ${err.response.statusText}`
+            const errorData = typeof err === 'string' ? err : err.response.data || `${err.response.status}: ${err.response.statusText}`
             handleError(errorData)
             return
         }
@@ -244,6 +244,7 @@ export const Bot = (props: BotProps & { class?: string }) => {
 
     // eslint-disable-next-line solid/reactivity
     createEffect(async () => {
+        /*
         const { data } = await isStreamAvailableQuery({
             chatflowid: props.chatflowid,
             apiHost: props.apiHost,
@@ -252,6 +253,8 @@ export const Bot = (props: BotProps & { class?: string }) => {
         if (data) {
             setIsChatFlowAvailableToStream(data?.isStreaming ?? false)
         }
+        */
+        setIsChatFlowAvailableToStream(false)
 
         const socket = socketIOClient(props.apiHost as string)
 
@@ -292,27 +295,12 @@ export const Bot = (props: BotProps & { class?: string }) => {
         }
     }
 
-    const handleVectaraMetadata = (message: any): any => {
-        if (message.sourceDocuments && message.sourceDocuments[0].metadata.length) {
-            message.sourceDocuments = message.sourceDocuments.map((docs: any) => {
-                const newMetadata: { [name: string]: any } = docs.metadata.reduce((newMetadata: any, metadata: any) => {
-                    newMetadata[metadata.name] = metadata.value;
-                    return newMetadata;
-                }, {})
-                return {
-                    pageContent: docs.pageContent,
-                    metadata: newMetadata,
-                }
-            })
-        }
-        return message
-    };
 
     const removeDuplicateURL = (message: MessageType) => {
         const visitedURLs: string[] = []
         const newSourceDocuments: any = []
 
-        message = handleVectaraMetadata(message)
+        message = message
 
         message.sourceDocuments.forEach((source: any) => {
             if (isValidURL(source.metadata.source) && !visitedURLs.includes(source.metadata.source)) {

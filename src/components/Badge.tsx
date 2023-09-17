@@ -51,17 +51,17 @@ export const Badge = (props: Props) => {
       "text-align": 'center',
       color: props.poweredByTextColor ?? defaultTextColor,
       "background-color": props.badgeBackgroundColor ?? '#ffffff'
-    }}>Powered by
+    }}>Powered by the stories
       <a
         ref={liteBadge}
-        href={'https://flowiseai.com'}
+        href={'https://www.daaji.org/'}
         target="_blank"
         rel="noopener noreferrer"
         class="lite-badge"
         id="lite-badge"
         style={{ "font-weight": 'bold', color: props.poweredByTextColor ?? defaultTextColor }}
       >
-        <span> Flowise</span>
+        <span> of Daaji</span>
       </a>
     </span>
   )
